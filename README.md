@@ -218,6 +218,10 @@ Este projeto é de código aberto e está disponível para uso livre.
 
 Se desejar contribuir com este projeto, sinta-se à vontade para abrir uma issue ou enviar um pull request. Qualquer contribuição é bem-vinda!
 
-## 📞 Contato
+## 👤 Autor
 
-Desenvolvido por Guilherme Borges - [GitHub](https://github.com/ShogunBP)
+Guilherme Menezes Rodrigues
+
+Email: guilhermemenezes1337@gmail.com
+GitHub: https://github.com/ShogunBP
+LinkedIn: https://www.linkedin.com/in/mr-guilherme/
