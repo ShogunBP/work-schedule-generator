@@ -20,6 +20,7 @@ O Work Schedule Generator é uma aplicação web moderna e intuitiva para gerar 
   - Horários customizáveis
   - Gerenciamento de pessoas e folgas
 - **Exportação**: Exporta a escala gerada como imagem JPEG de alta qualidade
+- **Compartilhamento Móvel**: Botão de compartilhamento para dispositivos móveis que permite compartilhar diretamente para aplicativos como WhatsApp e Instagram
 - **Persistência**: Dados salvos automaticamente no localStorage
 - **Algoritmo Inteligente**: Garante alternância obrigatória de postos e respeita regras de postos únicos
 
@@ -156,6 +157,7 @@ User Input → Component → Hook → LocalStorage
 - `DateSelector.tsx` - Seletor de data
 - `ScheduleDisplay.tsx` - Exibição da escala gerada
 - `ManualScheduleEditor.tsx` - Interface para edição manual da escala gerada
+- `ShareButton.tsx` - Botão de compartilhamento para dispositivos móveis
 
 ### Hooks Personalizados
 
@@ -202,6 +204,9 @@ User Input → Component → Hook → LocalStorage
 
 #### `exportUtils.ts`
 - Função `exportScheduleToJPEG()` para exportar a escala como imagem JPEG
+  - Mantém o estilo visual dos postos (bordas arredondadas)
+  - Exibe o texto corretamente no idioma selecionado ('Escala'/'Schedule')
+  - Recebe função de tradução para exibir o texto apropriado
 
 ## 🧪 Regras de Negócio
 
