@@ -8,9 +8,9 @@ const DEFAULT_STATIONS: StationConfig[] = [
 ];
 
 const DEFAULT_COLORS: Record<string, string> = {
-  P2: '#9333ea',
-  P3: '#2563eb',
-  P4: '#059669'
+  P2: '#31405e',
+  P3: '#31405e',
+  P4: '#31405e'
 };
 
 export function useStations() {
