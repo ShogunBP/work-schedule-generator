@@ -82,7 +82,7 @@ export function ShareButton({
 
       ctx.textAlign = 'center';
       person.stations.forEach((station, idx) => {
-        const stationColor = stationColors[station] || '#666666';
+        const stationColor = stationColors[station] || '#31405e';
         // Draw rectangle without rounded corners
         ctx.fillStyle = stationColor;
         ctx.fillRect(170 + idx * 130, y - 16, 60, 24);

@@ -40,7 +40,7 @@ export function StationColors({
             </div>
             <input
               type="color"
-              value={stationColors[station.name] || '#666666'}
+              value={stationColors[station.name] || '#31405e'}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChangeColor(station.name, e.target.value)}
               className="w-16 h-10 rounded cursor-pointer bg-transparent"
             />

@@ -46,7 +46,7 @@ export function ScheduleDisplay({
                     <span
                       className="inline-block px-3 py-1 rounded font-bold"
                       style={{
-                        backgroundColor: stationColors[station] || '#666666' // Adiciona cor padrão caso não exista
+                        backgroundColor: stationColors[station] || '#31405e' // Adiciona cor padrão caso não exista
                       }}
                     >
                       {station}

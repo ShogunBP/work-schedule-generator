@@ -69,7 +69,7 @@ export function exportScheduleToJPEG(
 
     ctx.textAlign = 'center';
     person.stations.forEach((station, idx) => {
-      const stationColor = stationColors[station] || '#666666';
+      const stationColor = stationColors[station] || '#31405e';
       // Draw rectangle with rounded corners to match the UI style
       const x = 170 + idx * 130;
       const rectY = y - 16;
