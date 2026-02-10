@@ -45,7 +45,9 @@ export const translations = {
     reset: "Resetar",
     resetToDefault: "Resetar para Padrão",
     cancel: "Cancelar",
-    confirm: "Confirmar"
+    confirm: "Confirmar",
+    share: "Compartilhar",
+    shareSchedule: "Compartilhar Escala"
   },
   en: {
     title: "Work Schedule",
@@ -93,7 +95,9 @@ export const translations = {
     reset: "Reset",
     resetToDefault: "Reset to Default",
     cancel: "Cancel",
-    confirm: "Confirm"
+    confirm: "Confirm",
+    share: "Share",
+    shareSchedule: "Share Schedule"
   }
 };
 

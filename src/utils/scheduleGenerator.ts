@@ -118,25 +118,9 @@ function initializeMultipliers(
   return multipliers;
 }
 
-/**
- * Reseta os multiplicadores de uma pessoa (todas as estações voltam a 1)
- */
-function resetPersonMultipliers(
-  multipliers: PersonMultipliers,
-  personName: string,
-  stations: StationConfig[]
-): void {
-  console.log(`    Resetando multiplicadores para ${personName}:`);
-  const previousValues = {...multipliers[personName]};
-  stations.forEach(station => {
-    multipliers[personName][station.name] = 1;
-  });
-  console.log(`    Valores anteriores:`, previousValues);
-  console.log(`    Valores após reset:`, multipliers[personName]);
-}
 
 /**
- * Aplica punição: reduz multiplicador para 0.01
+ * Aplica punição: reduz multiplicador para 0.001
  */
 function punishStation(
   multipliers: PersonMultipliers,
@@ -145,16 +129,10 @@ function punishStation(
 ): void {
   console.log(`    Aplicando punição a ${personName} na estação ${stationName}:`);
   console.log(`      Valor anterior: ${multipliers[personName][stationName]}`);
-  multipliers[personName][stationName] = 0.01;
+  multipliers[personName][stationName] = 0.001;
   console.log(`      Valor após punição: ${multipliers[personName][stationName]}`);
 }
 
-/**
- * Verifica se uma estação é múltipla (>2 pessoas)
- */
-function isStationMultiple(stationName: string, peopleCount: number): boolean {
-  return peopleCount > 2;
-}
 
 // ============ SORTEIO COM MULTIPLICADORES ============
 
@@ -214,19 +192,6 @@ function weightedRandomSelection(
 
 // ============ VALIDAÇÕES ============
 
-/**
- * Verifica se uma estação única tem exatamente 1 pessoa alocada
- */
-function validateUniqueStation(
-  assignment: Record<string, string>,
-  stationName: string
-): boolean {
-  let count = 0;
-  for (const station of Object.values(assignment)) {
-    if (station === stationName) count++;
-  }
-  return count === 1;
-}
 
 /**
  * Verifica se todos os postos únicos foram preenchidos
@@ -322,7 +287,101 @@ function allocateTimeSlot(
     console.log(`Tentativa ${attempt + 1}: Ordem das pessoas embaralhadas:`, shuffledPeople);
 
     let success = true;
-    for (const personName of shuffledPeople) {
+    
+    // Primeiro, tentamos alocar os postos únicos prioritariamente
+    const unallocatedPeople = [...shuffledPeople];
+    const unallocatedUniqueStations = uniqueStations.filter(station => !assignedStations.has(station));
+    
+    // Tentar alocar postos únicos primeiro, respeitando os multiplicadores
+    for (const stationName of unallocatedUniqueStations) {
+      const station = stations.find(s => s.name === stationName);
+      if (!station) continue;
+
+      // Filtrar pessoas que podem ser alocadas a este posto único
+      const eligiblePeople = unallocatedPeople.filter(personName => 
+        canAssignStation(personName, stationName, prevAssignment, stationConfigMap)
+      );
+
+      if (eligiblePeople.length === 0) {
+        console.log(`  Nenhuma pessoa elegível para o posto único ${stationName}!`);
+        success = false;
+        break;
+      }
+
+      // Criar uma lista temporária de estações contendo apenas este posto único
+      // para que o weightedRandomSelection selecione especificamente este posto
+      const temporaryStations = [station];
+      
+      // Filtrar apenas as pessoas elegíveis para usar no sorteio ponderado
+      const filteredMultipliers: PersonMultipliers = {};
+      eligiblePeople.forEach(personName => {
+        filteredMultipliers[personName] = multipliers[personName];
+      });
+
+      // Usar o weightedRandomSelection com as pessoas elegíveis e o posto único
+      const selectedPerson = eligiblePeople.sort(() => rng() - 0.5)[0]; // Embaralhar pessoas elegíveis
+      const selectedStation = weightedRandomSelection(temporaryStations, selectedPerson, filteredMultipliers, rng);
+      
+      assignment[selectedPerson] = selectedStation.name;
+      assignedStations.add(selectedStation.name);
+      
+      // Remover a pessoa da lista para evitar múltiplas alocações
+      const personIndex = unallocatedPeople.indexOf(selectedPerson);
+      if (personIndex !== -1) {
+        unallocatedPeople.splice(personIndex, 1);
+      }
+      
+      console.log(`  Alocado ${selectedPerson} ao posto único ${selectedStation.name}`);
+    }
+
+    // Se não conseguimos alocar todos os postos únicos, tentar novamente
+    if (!success) {
+      continue;
+    }
+
+    // Depois de alocar os postos únicos, verificar se temos postos múltiplos para distribuir
+    // e garantir que todos os postos múltiplos sejam ocupados se possível
+    const multipleStations = stations.filter(s => isMultipleStation(s));
+    
+    if (multipleStations.length > 0 && unallocatedPeople.length >= multipleStations.length) {
+      // Tentar alocar os postos múltiplos primeiro para garantir cobertura
+      const remainingPeople = [...unallocatedPeople];
+      
+      for (const station of multipleStations) {
+        // Filtrar pessoas que podem ser alocadas a este posto múltiplo
+        const eligiblePeople = remainingPeople.filter(personName => 
+          canAssignStation(personName, station.name, prevAssignment, stationConfigMap)
+        );
+
+        if (eligiblePeople.length === 0) {
+          console.log(`  Nenhuma pessoa elegível para o posto múltiplo ${station.name}!`);
+          success = false;
+          break;
+        }
+
+        // Selecionar uma pessoa aleatoriamente entre as elegíveis
+        const selectedPerson = eligiblePeople[Math.floor(rng() * eligiblePeople.length)];
+        
+        assignment[selectedPerson] = station.name;
+        assignedStations.add(station.name);
+        
+        // Remover a pessoa da lista para evitar múltiplas alocações
+        const personIndex = remainingPeople.indexOf(selectedPerson);
+        if (personIndex !== -1) {
+          remainingPeople.splice(personIndex, 1);
+        }
+        
+        console.log(`  Alocado ${selectedPerson} ao posto múltiplo ${station.name}`);
+      }
+      
+      if (!success) {
+        continue; // Tentar novamente
+      }
+    }
+
+    // Alocar os postos restantes para as pessoas que ainda não foram alocadas
+    const remainingPeople = unallocatedPeople.filter(personName => !assignment[personName]);
+    for (const personName of remainingPeople) {
       // Filtrar estações disponíveis para essa pessoa
       const available = stations.filter(station => {
         // Não pode atribuir a um único que já foi atribuído
@@ -506,8 +565,42 @@ export function generateSchedule(
         console.log(`  ${personName} recebeu posto único ${stationName} - aplicando punição`);
         punishStation(multipliers, personName, stationName);
       } else if (isMultipleStation(stationCfg)) {
-        console.log(`  ${personName} recebeu posto múltiplo ${stationName} - resetando multiplicadores`);
-        resetPersonMultipliers(multipliers, personName, effectiveStations);
+        console.log(`  ${personName} recebeu posto múltiplo ${stationName} - aplicando lógica especial para postos múltiplos`);
+        // Para postos múltiplos, aplicar uma punição moderada para evitar que a pessoa fique com o mesmo posto
+        // por muitos horários seguidos, mas não tão severa quanto para postos únicos
+        multipliers[personName][stationName] = Math.max(0.2, multipliers[personName][stationName] * 0.3);
+        
+        // Aumentar levemente os multiplicadores dos outros postos para promover diversidade
+        const personMultipliers = multipliers[personName];
+        for (const [otherStationName, currentMultiplier] of Object.entries(personMultipliers)) {
+          if (otherStationName !== stationName) {
+            multipliers[personName][otherStationName] = currentMultiplier * 1.5;
+          }
+        }
+        
+        // Ajuste adicional: se a pessoa já teve muitos postos múltiplos, aumentar mais os outros multiplicadores
+        // para promover alternância entre postos únicos e múltiplos
+        const personSchedule = schedulePeople.find(p => p.name === personName);
+        if (personSchedule) {
+          const multipleStationCount = personSchedule.stations.filter(s => 
+            effectiveStations.some(es => es.name === s && isMultipleStation(es))
+          ).length;
+          
+          if (multipleStationCount >= 1) {
+            // Se a pessoa já teve 1 ou mais postos múltiplos, aumentar os multiplicadores dos postos únicos
+            for (const station of effectiveStations) {
+              if (!isMultipleStation(station) && isUniqueStation(station)) {
+                multipliers[personName][station.name] = multipliers[personName][station.name] * 3.0;
+              }
+            }
+          }
+        }
+      } else {
+        // Para postos normais (não únicos nem múltiplos), aplicar uma punição leve para evitar repetição
+        // mas não tão severa quanto para postos únicos
+        console.log(`  ${personName} recebeu posto normal ${stationName} - aplicando punição leve`);
+        // Aplicar uma punição moderada para evitar que a pessoa fique com o mesmo posto muitas vezes
+        multipliers[personName][stationName] = Math.max(0.1, multipliers[personName][stationName] * 0.5);
       }
     });
 

@@ -15,6 +15,7 @@ import { StationColors } from './components/StationColors';
 import { DateSelector } from './components/DateSelector';
 import { ScheduleDisplay } from './components/ScheduleDisplay';
 import { ManualScheduleEditor } from './components/ManualScheduleEditor';
+import { ShareButton } from './components/ShareButton';
 import { ToastContainer } from './components/ToastContainer';
 
 const App = () => {
@@ -133,7 +134,7 @@ const App = () => {
 
   const handleExportJPEG = () => {
     if (schedule) {
-      exportScheduleToJPEG(schedule, stationColors, formatDate, getWeekDays, timeSlots);
+      exportScheduleToJPEG(schedule, stationColors, formatDate, getWeekDays, timeSlots, t);
     }
   };
 
@@ -274,13 +275,22 @@ const App = () => {
             {t('generateSchedule')}
           </button>
           {schedule && (
-            <button
-              onClick={handleExportJPEG}
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-semibold transition flex items-center gap-2 border border-white/20"
-            >
-              <Download className="w-5 h-5" />
-              {t('exportJPEG')}
-            </button>
+            <>
+              <button
+                onClick={handleExportJPEG}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-semibold transition flex items-center gap-2 border border-white/20"
+              >
+                <Download className="w-5 h-5" />
+                {t('exportJPEG')}
+              </button>
+              <ShareButton
+                schedule={schedule}
+                stationColors={stationColors}
+                formatDate={formatDate}
+                getWeekDays={getWeekDays}
+                timeSlots={timeSlots}
+              />
+            </>
           )}
         </div>
 
